@@ -16,7 +16,8 @@ class MyApp extends StatelessWidget {
 
 class OddsProbabilityConverter extends StatefulWidget {
   @override
-  _OddsProbabilityConverterState createState() => _OddsProbabilityConverterState();
+  _OddsProbabilityConverterState createState() =>
+      _OddsProbabilityConverterState();
 }
 
 class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
@@ -38,22 +39,15 @@ class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
   }
 
   void _updateOdds() {
-  if (_probabilityController.text.isNotEmpty) {
-    double probability = double.parse(_probabilityController.text) / 100;
-    int a = (probability*10000).round();
-    int b = ((1-probability)*10000).round();
-    //double oddsRatio = probability / (1 - probability);
-    //int denominator = 10000;
-    //int numerator = (oddsRatio * denominator).round();
-    //int gcd = _gcd(numerator, denominator);
-    //_oddsAController.text = (numerator ~/ gcd).toString();
-    //_oddsBController.text = (denominator ~/ gcd).toString();
-    int gcd = _gcd(a, b);
-    _oddsAController.text = (a ~/ gcd).toString();
-    _oddsBController.text = (b ~/ gcd).toString();
+    if (_probabilityController.text.isNotEmpty) {
+      double probability = double.parse(_probabilityController.text) / 100;
+      int a = (probability * 10000).round();
+      int b = ((1 - probability) * 10000).round();
+      int gcd = _gcd(a, b);
+      _oddsAController.text = (a ~/ gcd).toString();
+      _oddsBController.text = (b ~/ gcd).toString();
+    }
   }
-}
-
 
   Widget _buildOddsInput() {
     return Row(
@@ -94,21 +88,36 @@ class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
     );
   }
 
+  Widget _buildScreen1() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          _buildOddsInput(),
+          SizedBox(height: 16),
+          _buildProbabilityInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScreen2() {
+    return Center(
+      child: Text('This is the second screen'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Odds to Probability Converter'),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildOddsInput(),
-            SizedBox(height: 16),
-            _buildProbabilityInput(),
-          ],
-        ),
+      body: PageView(
+        children: [
+          _buildScreen1(),
+          _buildScreen2(),
+        ],
       ),
     );
   }
