@@ -24,8 +24,10 @@ class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
   TextEditingController _oddsAController = TextEditingController();
   TextEditingController _oddsBController = TextEditingController();
   TextEditingController _probabilityController = TextEditingController();
-  TextEditingController _houseOddsAController = TextEditingController();
-  TextEditingController _houseOddsBController = TextEditingController();
+  TextEditingController _houseOddsAForController = TextEditingController();
+  TextEditingController _houseOddsBForController = TextEditingController();
+  TextEditingController _houseOddsAAgainstController = TextEditingController();
+  TextEditingController _houseOddsBAgainstController = TextEditingController();
   String _optimalBetMessage = '';
 
   int _gcd(int a, int b) {
@@ -53,124 +55,128 @@ class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
   }
 
   void _calculateOptimalBet() {
-    if (_houseOddsAController.text.isNotEmpty &&
-        _houseOddsBController.text.isNotEmpty &&
+    if (_houseOddsAForController.text.isNotEmpty &&
+        _houseOddsBForController.text.isNotEmpty &&
+        _houseOddsAAgainstController.text.isNotEmpty &&
+        _houseOddsBAgainstController.text.isNotEmpty &&
         _probabilityController.text.isNotEmpty) {
       double probabilityA = double.parse(_probabilityController.text) / 100;
       double probabilityB = 1 - probabilityA;
-      double houseOddsA = double.parse(_houseOddsAController.text);
-      double houseOddsB = double.parse(_houseOddsBController.text);
+      double houseOddsAFor = double.parse(_houseOddsAForController.text);
+      double houseOddsBFor = double.parse(_houseOddsBForController.text);
+      double houseOddsAAgainst =
+          double.parse(_houseOddsAAgainstController.text);
+      double houseOddsBAgainst =
+          double.parse(_houseOddsBAgainstController.text);
 
-      double expectedGainA = probabilityA * houseOddsA - probabilityB;
-      double expectedGainB = probabilityB * houseOddsB - probabilityA;
+      double expectedGainFor =
+          probabilityA * (houseOddsBFor / houseOddsAFor) - (1 - probabilityA);
+      double expectedGainAgainst =
+          (1 - probabilityA) * (houseOddsAAgainst / houseOddsBAgainst) -
+              probabilityA;
 
-      if (expectedGainA > expectedGainB) {
+      if (expectedGainFor > expectedGainAgainst) {
         _optimalBetMessage =
-            'Given your probabilities and the quotes from the betting house, your optimal bet is for A, which will have an expected gain of ${expectedGainA.toStringAsFixed(2)}';
+            'Given your probabilities and the quotes from the betting house, your optimal bet is for the event, which will have an expected gain of ${expectedGainFor.toStringAsFixed(2)}';
       } else {
         _optimalBetMessage =
-            'Given your probabilities and the quotes from the betting house, your optimal bet is against A, which will have an expected gain of ${expectedGainB.toStringAsFixed(2)}';
+            'Given your probabilities and the quotes from the betting house, your optimal bet is against the event, which will have an expected gain of ${expectedGainAgainst.toStringAsFixed(2)}';
       }
 
       setState(() {});
     }
   }
 
-  Widget _buildOddsInput() {
-    return Row(
-      children: [
-        Flexible(
-          child: TextFormField(
-            controller: _oddsAController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: 'Odds A'),
-            onChanged: (_) {
-              _updateProbability();
-            },
-          ),
-        ),
-        Text(' : '),
-        Flexible(
-          child: TextFormField(
-            controller: _oddsBController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: 'Odds B'),
-            onChanged: (_) {
-              _updateProbability();
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProbabilityInput() {
-    return TextFormField(
-      controller: _probabilityController,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(labelText: 'Probability (%)'),
-      onChanged: (_) {
-        _updateOdds();
-        _calculateOptimalBet();
-      },
-    );
-  }
-
-  Widget _buildHouseOddsInput() {
-    return Row(
-      children: [
-        Flexible(
-          child: TextFormField(
-            controller: _houseOddsAController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: 'House Odds A'),
-            onChanged: (_) {
-              _calculateOptimalBet();
-            },
-          ),
-        ),
-        SizedBox(width: 16),
-        Flexible(
-          child: TextFormField(
-            controller: _houseOddsBController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: 'House Odds B'),
-            onChanged: (_) {
-              _calculateOptimalBet();
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOptimalBetMessage() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Text(
-        _optimalBetMessage,
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 16),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Odds to Probability Converter'),
+        title: Text('Odds Probability Converter'),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildOddsInput(),
-            SizedBox(height: 16),
-            _buildProbabilityInput(),
-            SizedBox(height: 16),
-            _buildHouseOddsInput(),
-            _buildOptimalBetMessage(),
+            Row(
+              children: [
+                Flexible(
+                  child: TextFormField(
+                    controller: _oddsAController,
+                    decoration: InputDecoration(labelText: 'User Odds A'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _updateProbability(),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Flexible(
+                  child: TextFormField(
+                    controller: _oddsBController,
+                    decoration: InputDecoration(labelText: 'User Odds B'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _updateProbability(),
+                  ),
+                ),
+              ],
+            ),
+            TextFormField(
+              controller: _probabilityController,
+              decoration:
+                  InputDecoration(labelText: 'User probability for event'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _updateOdds(),
+            ),
+            Row(
+              children: [
+                Flexible(
+                  child: TextFormField(
+                    controller: _houseOddsAForController,
+                    decoration:
+                        InputDecoration(labelText: 'House odds A for event'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _calculateOptimalBet(),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Flexible(
+                  child: TextFormField(
+                    controller: _houseOddsBForController,
+                    decoration:
+                        InputDecoration(labelText: 'House odds B for event'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _calculateOptimalBet(),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Flexible(
+                  child: TextFormField(
+                    controller: _houseOddsAAgainstController,
+                    decoration: InputDecoration(
+                        labelText: 'House odds A against event'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _calculateOptimalBet(),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Flexible(
+                  child: TextFormField(
+                    controller: _houseOddsBAgainstController,
+                    decoration: InputDecoration(
+                        labelText: 'House odds B against event'),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => _calculateOptimalBet(),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
+            Text(
+              _optimalBetMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
           ],
         ),
       ),
