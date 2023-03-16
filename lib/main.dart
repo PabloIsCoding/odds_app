@@ -69,18 +69,24 @@ class _OddsProbabilityConverterState extends State<OddsProbabilityConverter> {
       double houseOddsBAgainst =
           double.parse(_houseOddsBAgainstController.text);
 
-      double expectedGainFor =
-          probabilityA * (houseOddsBFor / houseOddsAFor) - (1 - probabilityA);
+      double payoffFor = (houseOddsBFor / houseOddsAFor);
+      double payoffAgainst = (houseOddsAAgainst / houseOddsBAgainst);
+      double expectedGainFor = probabilityA * payoffFor - (1 - probabilityA);
       double expectedGainAgainst =
-          (1 - probabilityA) * (houseOddsAAgainst / houseOddsBAgainst) -
-              probabilityA;
+          (1 - probabilityA) * payoffAgainst - probabilityA;
 
       if (expectedGainFor > expectedGainAgainst) {
         _optimalBetMessage =
             'Given your probabilities and the quotes from the betting house, your optimal bet is for the event, which will have an expected gain of ${expectedGainFor.toStringAsFixed(2)}';
+        double kellyFraction = probabilityA - probabilityB / payoffFor;
+        _optimalBetMessage +=
+            ', and you should bet ${kellyFraction.toStringAsFixed(2)} fraction of your bankroll.';
       } else {
         _optimalBetMessage =
             'Given your probabilities and the quotes from the betting house, your optimal bet is against the event, which will have an expected gain of ${expectedGainAgainst.toStringAsFixed(2)}';
+        double kellyFraction = probabilityB - probabilityA / payoffAgainst;
+        _optimalBetMessage +=
+            ', and you should bet ${kellyFraction.toStringAsFixed(2)} fraction of your bankroll.';
       }
 
       setState(() {});
